@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Latitude Financial Services</title>
+    <link rel="icon" type="image/png" href="/Druidai.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <main class="page">
+      <aside class="sidebar-left" aria-label="Community sidebar">
+        <div class="orbit-container" aria-hidden="true">
+          <div class="orbit-ring ring-1"></div>
+          <div class="orbit-ring ring-2"></div>
+          <div class="orbit-ring ring-3"></div>
+
+          <img src="https://i.pravatar.cc/88?img=12" class="avatar pos-1" alt="User avatar 1" />
+          <img src="https://i.pravatar.cc/88?img=32" class="avatar pos-2" alt="User avatar 2" />
+          <img src="https://i.pravatar.cc/88?img=48" class="avatar pos-3" alt="User avatar 3" />
+          <img src="https://i.pravatar.cc/88?img=65" class="avatar pos-4" alt="User avatar 4" />
+        </div>
+      </aside>
+
+      <section class="content-area">
+        <img class="page-logo" src="/Druidai.png" alt="Latitude AI logo" />
+        <section class="card">
+          <h1>Latitude Financial Services Form</h1>
+
+          <form id="profileForm">
+            <div class="field">
+              <label for="name">Full Name</label>
+              <input id="name" name="name" type="text" placeholder="Your full name" />
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" placeholder="you@example.com" />
+            </div>
+
+            <div class="field">
+              <label for="dob">Date of Birth</label>
+              <input id="dob" name="dob" type="date" />
+            </div>
+
+            <fieldset class="field">
+              <legend>Gender</legend>
+              <div class="radio-row">
+                <label><input type="radio" name="gender" value="male" /> Male</label>
+                <label><input type="radio" name="gender" value="female" /> Female</label>
+                <label><input type="radio" name="gender" value="non-binary" /> Non-binary</label>
+                <label><input type="radio" name="gender" value="prefer-not-to-say" /> Prefer not to say</label>
+              </div>
+            </fieldset>
+
+            <fieldset class="field">
+              <legend>Relationship Status</legend>
+              <div class="radio-row">
+                <label><input type="radio" name="relationshipStatus" value="single" /> Single</label>
+                <label><input type="radio" name="relationshipStatus" value="married" /> Married</label>
+                <label><input type="radio" name="relationshipStatus" value="in-a-relationship" /> In a relationship</label>
+                <label><input type="radio" name="relationshipStatus" value="divorced" /> Divorced</label>
+                <label><input type="radio" name="relationshipStatus" value="widowed" /> Widowed</label>
+                <label><input type="radio" name="relationshipStatus" value="prefer-not-to-say" /> Prefer not to say</label>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label for="uploadedImagePreview">Uploaded Image</label>
+              <div class="uploaded-image-wrap">
+                <img
+                  id="uploadedImagePreview"
+                  class="uploaded-image-preview"
+                  alt="Uploaded image preview from chat"
+                  hidden
+                />
+                <p id="uploadedImageHint" class="uploaded-image-hint">
+                  Waiting for image upload from User.
+                </p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Passport Details</label>
+              <div class="ocr-grid">
+                <div class="ocr-item">
+                  <label for="ocrName">Passport Name</label>
+                  <input id="ocrName" type="text" readonly placeholder="Waiting for OCR result" />
+                </div>
+                <div class="ocr-item">
+                  <label for="ocrPassportId">Passport ID</label>
+                  <input id="ocrPassportId" type="text" readonly placeholder="Waiting for OCR result" />
+                </div>
+              </div>
+            </div>
+
+            <fieldset class="field">
+              <legend>Credit Card</legend>
+              <div class="hero-card-grid">
+                <label class="hero-card-option">
+                  <input type="radio" name="creditCard" value="latitude-low-rate-mastercard" />
+                  <span class="hero-card-content">
+                    <img
+                      src="https://www.latitudefinancial.com.au/static/cc-gem-62faa6553644079e067e2c6101a38cfc.webp"
+                      alt="Latitude Low Rate Mastercard"
+                    />
+                    <span class="hero-card-text">
+                      <span class="hero-card-title">Latitude Low Rate Mastercard</span>
+                      <span class="hero-card-description">
+                        Enjoy a 13.99% p.a. purchase rate, so you can stretch your budget without stressing it.
+                        Wherever you go, our specialist team keeps your personal info safe from fraud and identity theft.
+                      </span>
+                    </span>
+                  </span>
+                </label>
+
+                <label class="hero-card-option">
+                  <input type="radio" name="creditCard" value="latitude-go-mastercard" />
+                  <span class="hero-card-content">
+                    <img
+                      src="https://www.latitudefinancial.com.au/static/cc-go-687c02a361ec5a633a0856419773ef87.webp"
+                      alt="Latitude GO Mastercard"
+                    />
+                    <span class="hero-card-text">
+                      <span class="hero-card-title">Latitude GO Mastercard</span>
+                      <span class="hero-card-description">
+                        60 months Interest Free plan at Harvey Norman plus bonus Harvey Norman gift card up to
+                        $1,000 with your Latitude GO Mastercard credit card when you spend a minimum of $1,000 on an
+                        equal monthly payment plan.
+                      </span>
+                    </span>
+                  </span>
+                </label>
+
+                <label class="hero-card-option">
+                  <input type="radio" name="creditCard" value="latitude-28-global-platinum-mastercard" />
+                  <span class="hero-card-content">
+                    <img
+                      src="https://www.latitudefinancial.com.au/static/cc-28d-3bd2324a8d76c53ac59ef59944352d3d.webp"
+                      alt="28° Global Platinum Mastercard"
+                    />
+                    <span class="hero-card-text">
+                      <span class="hero-card-title">28° Global Platinum Mastercard</span>
+                      <span class="hero-card-description">
+                        Get a bonus $260 in Latitude Rewards when you spend $2,000 or more each month for your first
+                        3 months. New customers only, approved by 30 April 2026. Plus, get ongoing Latitude Rewards:
+                        up to $240 each year when you spend $1,000 or more on eligible international and local
+                        purchases each month.
+                      </span>
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+          </form>
+        </section>
+      </section>
+    </main>
+    <script defer src="./app.js"></script>
+    <script
+      defer
+      type="text/javascript"
+      src="https://Agents.community.druidplatform.com/v2/druid_webchat_v2_load.js?botId=47371448-a170-4de9-cbac-08de9ed49c21&baseUrl=https%3A%2F%2Fdruidapi.comm.eu.druidplatform.com"
+    ></script>
+  </body>
+</html>
