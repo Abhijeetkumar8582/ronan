@@ -24,7 +24,7 @@ const DRUID_CHAT_BEARER_TOKEN = process.env.DRUID_CHAT_BEARER_TOKEN || "";
 const TRANSCRIPT_CONTEXT_LINES = Number(process.env.TRANSCRIPT_CONTEXT_LINES || 20);
 const CREDIT_CARD_OPTIONS = [
   {
-    value: "latitude-low-rate-mastercard",
+    value: "low-rate-mastercard",
     aliases: [
       "latitude low rate mastercard",
       "low rate mastercard",
@@ -37,7 +37,7 @@ const CREDIT_CARD_OPTIONS = [
     ]
   },
   {
-    value: "latitude-go-mastercard",
+    value: "go-mastercard",
     aliases: [
       "latitude go mastercard",
       "go mastercard",
@@ -50,7 +50,7 @@ const CREDIT_CARD_OPTIONS = [
     ]
   },
   {
-    value: "latitude-28-global-platinum-mastercard",
+    value: "28-global-platinum-mastercard",
     aliases: [
       "latitude 28 platinum mastercard",
       "28 global platinum mastercard",
@@ -448,64 +448,106 @@ function normalizeCreditCard(value) {
   const raw = value.trim().toLowerCase();
   if (!raw) return null;
 
-  if (raw === "latitude-28-platinum-mastercard") {
-    return "latitude-28-global-platinum-mastercard";
-  }
+  const legacyValueMap = {
+    "latitude-low-rate-mastercard": "low-rate-mastercard",
+    "latitude-go-mastercard": "go-mastercard",
+    "latitude-28-global-platinum-mastercard": "28-global-platinum-mastercard",
+    "latitude-28-platinum-mastercard": "28-global-platinum-mastercard"
+  };
+  if (legacyValueMap[raw]) return legacyValueMap[raw];
 
-  if (CREDIT_CARD_OPTIONS.some((option) => option.value === raw)) {
-    return raw;
-  }
+  const candidates = buildCreditCardCandidates();
 
-  const normalized = raw.replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
+  const direct = candidates.find((candidate) => candidate.keys.has(raw));
+  if (direct) return direct.value;
+
+  const normalized = normalizeLookupText(raw);
   if (!normalized) return null;
 
-  if (normalized === "1" || normalized === "one" || normalized === "first" || normalized === "1st") {
-    return "latitude-low-rate-mastercard";
-  }
-  if (normalized === "2" || normalized === "two" || normalized === "second" || normalized === "2nd") {
-    return "latitude-go-mastercard";
-  }
-  if (normalized === "3" || normalized === "three" || normalized === "third" || normalized === "3rd") {
-    return "latitude-28-global-platinum-mastercard";
+  const normalizedDirect = candidates.find((candidate) => candidate.keys.has(normalized));
+  if (normalizedDirect) return normalizedDirect.value;
+
+  const ordinalIndex = parseOrdinalCardIndex(normalized);
+  if (ordinalIndex !== null && candidates[ordinalIndex]) {
+    return candidates[ordinalIndex].value;
   }
 
-  if (
-    /\b(first|1st|one)\b/.test(normalized) &&
-    (/\b(card|credit|option)\b/.test(normalized) || /\bgo with\b/.test(normalized))
-  ) {
-    return "latitude-low-rate-mastercard";
-  }
-  if (
-    /\b(second|2nd|two)\b/.test(normalized) &&
-    (/\b(card|credit|option)\b/.test(normalized) || /\bgo with\b/.test(normalized))
-  ) {
-    return "latitude-go-mastercard";
-  }
-  if (
-    /\b(third|3rd|three)\b/.test(normalized) &&
-    (/\b(card|credit|option)\b/.test(normalized) || /\bgo with\b/.test(normalized))
-  ) {
-    return "latitude-28-global-platinum-mastercard";
-  }
-
-  for (const option of CREDIT_CARD_OPTIONS) {
-    const matchedAlias = option.aliases.some((alias) => normalized.includes(alias));
-    if (matchedAlias) return option.value;
-  }
-
-  if (normalized === "go") return "latitude-go-mastercard";
-  if (normalized === "low rate") return "latitude-low-rate-mastercard";
-  if (
-    normalized === "global platinum" ||
-    normalized === "28 global" ||
-    normalized === "28 degree" ||
-    normalized === "28 platinum" ||
-    normalized === "platinum"
-  ) {
-    return "latitude-28-global-platinum-mastercard";
+  for (const candidate of candidates) {
+    for (const key of candidate.keys) {
+      if (key.length >= 4 && normalized.includes(key)) {
+        return candidate.value;
+      }
+    }
   }
 
   return null;
+}
+
+function buildCreditCardCandidates() {
+  return CREDIT_CARD_OPTIONS.map((option) => {
+    const keys = new Set();
+    const addKey = (input) => {
+      const normalized = normalizeLookupText(input);
+      if (normalized) keys.add(normalized);
+    };
+
+    addKey(option.value);
+    addKey(option.value.replace(/-/g, " "));
+    addKey(option.value.replace(/^latitude-/, "").replace(/-/g, " "));
+    for (const alias of option.aliases || []) addKey(alias);
+
+    return {
+      value: option.value,
+      keys
+    };
+  });
+}
+
+function parseOrdinalCardIndex(normalizedText) {
+  const match = normalizedText.match(
+    /\b(1|one|first|1st|2|two|second|2nd|3|three|third|3rd|4|four|fourth|4th|5|five|fifth|5th)\b/
+  );
+  if (!match?.[1]) return null;
+  if (!/\b(card|credit|option)\b/.test(normalizedText) && !/\bgo with\b/.test(normalizedText)) {
+    return null;
+  }
+
+  const token = match[1];
+  const indexMap = {
+    "1": 0,
+    one: 0,
+    first: 0,
+    "1st": 0,
+    "2": 1,
+    two: 1,
+    second: 1,
+    "2nd": 1,
+    "3": 2,
+    three: 2,
+    third: 2,
+    "3rd": 2,
+    "4": 3,
+    four: 3,
+    fourth: 3,
+    "4th": 3,
+    "5": 4,
+    five: 4,
+    fifth: 4,
+    "5th": 4
+  };
+
+  return Object.prototype.hasOwnProperty.call(indexMap, token) ? indexMap[token] : null;
+}
+
+function normalizeLookupText(value) {
+  if (typeof value !== "string") return null;
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || null;
 }
 
 function normalizePassportId(value) {
@@ -566,7 +608,7 @@ From the provided conversation payload, extract ONLY these fields if explicitly 
 - dob (string in YYYY-MM-DD format)
 - gender (one of: male, female, non-binary, prefer-not-to-say)
 - relationshipStatus (one of: single, married, in-a-relationship, divorced, widowed, prefer-not-to-say)
-- creditCard (one of: latitude-low-rate-mastercard, latitude-go-mastercard, latitude-28-global-platinum-mastercard)
+- creditCard (one of: low-rate-mastercard, go-mastercard, 28-global-platinum-mastercard)
 
 Rules:
 1) Return strict JSON object only.

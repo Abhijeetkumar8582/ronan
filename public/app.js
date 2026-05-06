@@ -292,13 +292,124 @@ function applyExtractedFields(extracted) {
   }
 
   if (extracted.creditCard) {
+    const resolvedCreditCard = resolveCreditCardValue(extracted.creditCard);
     const creditCardInput = document.querySelector(
-      `input[name="creditCard"][value="${extracted.creditCard}"]`
+      `input[name="creditCard"][value="${resolvedCreditCard || extracted.creditCard}"]`
     );
     if (creditCardInput) {
       creditCardInput.checked = true;
     }
   }
+}
+
+function resolveCreditCardValue(value) {
+  if (typeof value !== "string") return null;
+  const raw = value.trim().toLowerCase();
+  if (!raw) return null;
+
+  const directMap = {
+    "latitude-low-rate-mastercard": "low-rate-mastercard",
+    "latitude-go-mastercard": "go-mastercard",
+    "latitude-28-global-platinum-mastercard": "28-global-platinum-mastercard",
+    "latitude-28-platinum-mastercard": "28-global-platinum-mastercard"
+  };
+  if (directMap[raw]) return directMap[raw];
+
+  const normalized = raw.replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
+  if (!normalized) return null;
+
+  const candidates = getCreditCardCandidatesFromDom();
+  if (!candidates.length) return null;
+
+  const byRaw = candidates.find((candidate) => candidate.keys.has(raw));
+  if (byRaw) return byRaw.value;
+
+  const byNormalized = candidates.find((candidate) => candidate.keys.has(normalized));
+  if (byNormalized) return byNormalized.value;
+
+  const ordinalIndex = parseOrdinalCreditCardIndex(normalized);
+  if (ordinalIndex !== null && candidates[ordinalIndex]) {
+    return candidates[ordinalIndex].value;
+  }
+
+  for (const candidate of candidates) {
+    for (const key of candidate.keys) {
+      if (key.length >= 4 && normalized.includes(key)) {
+        return candidate.value;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getCreditCardCandidatesFromDom() {
+  const inputs = Array.from(document.querySelectorAll('input[name="creditCard"]'));
+  return inputs
+    .map((input) => {
+      const value = normalizeCreditCardLookupText(input.value);
+      if (!value) return null;
+
+      const keys = new Set([value, normalizeCreditCardLookupText(input.value.replace(/-/g, " "))].filter(Boolean));
+      const option = input.closest(".hero-card-option");
+      const titleText = option?.querySelector(".hero-card-title")?.textContent || "";
+      const altText = option?.querySelector("img")?.alt || "";
+      const ariaText = option?.getAttribute("aria-label") || "";
+
+      for (const text of [titleText, altText, ariaText]) {
+        const normalized = normalizeCreditCardLookupText(text);
+        if (normalized) keys.add(normalized);
+      }
+
+      return { value: input.value, keys };
+    })
+    .filter(Boolean);
+}
+
+function parseOrdinalCreditCardIndex(normalizedText) {
+  const match = normalizedText.match(
+    /\b(1|one|first|1st|2|two|second|2nd|3|three|third|3rd|4|four|fourth|4th|5|five|fifth|5th)\b/
+  );
+  if (!match?.[1]) return null;
+  if (!/\b(card|credit|option)\b/.test(normalizedText) && !/\bgo with\b/.test(normalizedText)) {
+    return null;
+  }
+
+  const token = match[1];
+  const indexMap = {
+    "1": 0,
+    one: 0,
+    first: 0,
+    "1st": 0,
+    "2": 1,
+    two: 1,
+    second: 1,
+    "2nd": 1,
+    "3": 2,
+    three: 2,
+    third: 2,
+    "3rd": 2,
+    "4": 3,
+    four: 3,
+    fourth: 3,
+    "4th": 3,
+    "5": 4,
+    five: 4,
+    fifth: 4,
+    "5th": 4
+  };
+  return Object.prototype.hasOwnProperty.call(indexMap, token) ? indexMap[token] : null;
+}
+
+function normalizeCreditCardLookupText(value) {
+  if (typeof value !== "string") return null;
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || null;
 }
 
 function getCheckedValue(name) {
